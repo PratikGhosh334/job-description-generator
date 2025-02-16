@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Job Description Generator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            color: #333333;
+            background: #FFFFFF;
+        }
+        header {
+            background: #2E86AB;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 32px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #2E86AB;
+            color: #FFFFFF;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1C5A7A;
+        }
+        .output-area {
+            background: #F6F5AE;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .output-area pre {
+            white-space: pre-wrap; /* Allows wrapping of long text */
+            word-wrap: break-word; /* Breaks long words */
+        }
+        footer {
+            background: #2E86AB;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        footer a {
+            color: #FFFFFF;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        input:focus, textarea:focus {
+            border: 1px solid #2E86AB;
+            box-shadow: 0 0 5px #2E86AB;
+            outline: none;
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px; /* Smaller font size for mobile */
+            }
+            body {
+                font-size: 14px; /* Smaller body text */
+            }
+            button {
+                font-size: 14px; /* Smaller button text */
+            }
+        }
+        @media (max-width: 576px) {
+            .form-group {
+                margin-bottom: 15px; /* Adjust margin for smaller screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>AI-Powered Job Description Generator</h1>
+        <p>Create professional job descriptions in minutes.</p>
+    </header>
+    <div class="container mt-4">
+        <form id="jobForm">
+            <div class="form-group">
+                <label for="job_title">Job Title:</label>
+                <input type="text" class="form-control" id="job_title" name="job_title" required>
+            </div>
+            <div class="form-group">
+                <label for="skills">Required Skills:</label>
+                <input type="text" class="form-control" id="skills" name="skills" required>
+            </div>
+            <div class="form-group">
+                <label for="culture">Company Culture:</label>
+                <input type="text" class="form-control" id="culture" name="culture" placeholder="Enter company culture" required>
+            </div>
+            <div class="form-group">
+                <label for="details">Additional Details:</label>
+                <textarea class="form-control" id="details" name="details"></textarea>
+            </div>
+            <button type="submit">Generate Job Description</button>
+        </form>
+        
+        <div class="output-area mt-4">
+            <h2>Generated Job Description:</h2>
+            <pre id="output"></pre>
+            <button id="exportButton" style="display:none;">Export to DOCX</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('jobForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            const response = await fetch('/generate', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('output').textContent = data.job_description;
+
+            // Show the export button
+            document.getElementById('exportButton').style.display = 'block';
+        };
+
+        document.getElementById('exportButton').onclick = async function() {
+            const jobDescription = document.getElementById('output').textContent;
+            const response = await fetch('/export_docx', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ job_description: jobDescription })
+            });
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'job_description.docx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+</html>
